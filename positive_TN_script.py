@@ -3,7 +3,7 @@ import os
 import sys
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 npz_directory = script_directory + '/all_one.npz'
-with open(npz_directory, 'r') as f:
+with open(npz_directory, 'a+') as f:
     pass
 
 print(npz_directory)
