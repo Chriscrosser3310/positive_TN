@@ -282,29 +282,42 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=Fals
             print()
     return avg_table, std_table
 
-if __name__ == "__main__":
+def plot_npz(filenames):
+    npz_directorys = []
+    if type(filenames) == str:
+        filenames = [filenames]
 
-    import os
-    import sys
-    script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-    npz_directory = script_directory + '\\all_one.npz'
-
-    regen = False
-    if (not os.path.isfile(npz_directory)) or (regen == True):
-        d = 2
-        nlist = [10, 20, 30]
-        plist = np.linspace(0, 2/d**3, 10, endpoint=True)
-        avg_table, std_table = avg_entropy_nplist(nlist, plist, bdim=d, repeat=10, mode="all_one", prt=True)
-
-        with open(npz_directory, 'wb') as f:
-            np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
-    else:
+    d, nlist, plist, avg_table, std_table = None, None, None, None, None
+    for filename in filenames:
+        script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+        npz_directory = script_directory + f'{filename}'
+        npz_directorys.append(npz_directory)
         npz = np.load(npz_directory)
-        d = npz['d'][0]
-        nlist = npz['nlist']
-        plist = npz['plist']
-        avg_table = npz['avg_table']
-        std_table = npz['std_table']
+
+        if d is None:
+            d = npz['d'][0]
+        else:
+            assert d == npz['d'][0], "bond dimension must match"
+        
+        if plist is None:
+            plist = npz['plist']
+        else:
+            assert all(plist == plist), "plist must match"
+                
+        if nlist is None:
+            nlist = npz['nlist']
+        else:
+            nlist = np.append(nlist, npz['nlist'])
+        
+        if avg_table is None:
+            avg_table = npz['avg_table']
+        else:
+            avg_table = np.append(avg_table, npz['avg_table'], axis=0)
+
+        if std_table is None:
+            std_table = npz['std_table']
+        else:
+            std_table = np.append(std_table, npz['std_table'], axis=0)
 
     """
     fig = plt.figure(figsize=(8, 4), alpha=0)
@@ -334,7 +347,19 @@ if __name__ == "__main__":
         [bar.set_alpha(0.5) for bar in bars]
         [cap.set_alpha(0.5) for cap in caps]
     
-    ax.axhline(y=0 , color='r', linestyle='--')
-    ax.legend()
+    ax.axhline(y=0 , color='r', linestyle='--', label='_nolegend_')
+    #ax.legend()
 
-    plt.show()
+    plt.title(f"Entanglement of d={d} n by n grid")
+    plt.xlabel("p*d^3")
+    plt.ylabel("Renyi-2 entropy")
+    plt.legend([f"n={n}" for n in nlist], loc="upper right", ncol=2)
+
+    return fig, ax
+
+if __name__ == "__main__":
+   plot_npz(["/../all_one/2_[8,10,12]_10_50.npz", "/../all_one/2_[14]_10_50.npz"])
+   #plt.show()
+
+   plot_npz(["/../all_one/3_[8,10,12]_10_50.npz"])
+   plt.show()
