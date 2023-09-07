@@ -15,3 +15,5 @@ avg_table, std_table = avg_entropy_nplist(nlist, plist, bdim=d, repeat=repeat, m
 
 with open(npz_directory, 'wb') as f:
     np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+
+print("done")
