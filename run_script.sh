@@ -15,5 +15,5 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 for u in 8
 do
     echo $u
-    python positive_TN_script.py 2 [10,20,30] 10 10 > sbatch_buffer.txt
+    python -u positive_TN_script.py 2 [10,20,30] 10 10 > sbatch_buffer.txt
 done
