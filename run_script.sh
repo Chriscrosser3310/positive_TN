@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=1-00:00:00
-#SBATCH -J QTT_HF_AR
+#SBATCH -J positive_TN
 ##SBATCH -o job.out
 ##SBATCH -e job.err
 #SBATCH --mail-user=jchen9@caltech.edu
