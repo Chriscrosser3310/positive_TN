@@ -16,4 +16,8 @@ for u in 8
 do
     echo $u
     python -u positive_TN_script.py 2 [10,20,30] 10 10 > sbatch_buffer.txt
+    :loop
+    mail -s 'positive_TN' jchen9@caltech.edu < sbatch_buffer.txt
+    ping localhost -n 61 > nul
+    goto loop
 done
