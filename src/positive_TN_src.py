@@ -260,10 +260,12 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=Fals
     avg_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
     std_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
 
+    script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
     if filename == None:
-        script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-        filename = script_directory + f"/{mode}.npz"
-    np.savez(filename, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+        file_directory = script_directory + f"/{mode}.npz"
+    else:
+        file_directory = script_directory + f"/{filename}.npz"
+    np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
     for (i, p) in enumerate(plist):
         if prt:
             print(f"-------p = {p}-------")
@@ -275,7 +277,7 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=Fals
             std_table[j, i] = std
             if prt:
                 print(f"{n}", end = " ")
-            np.savez(filename, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+            np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
         if prt:
             print()
     return avg_table, std_table
