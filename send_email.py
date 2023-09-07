@@ -8,4 +8,5 @@ with open(script_directory + '/sbatch_buffer.txt', 'r') as f:
 while 'done' not in last_line:
     os.system("mail -s 'positive_TN' jchen9@caltech.edu < sbatch_buffer.txt")
     print("email sent")
-    sleep(60)
+    sleep(3600)
+os.system("mail -a all_one.npz -s 'positive_TN_file' jchen9@caltech.edu < sbatch_buffer.txt")
