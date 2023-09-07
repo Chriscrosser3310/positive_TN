@@ -4,6 +4,8 @@ import quimb as qu
 import quimb.tensor as qtn
 from matplotlib import pyplot as plt
 import scipy.stats as stats
+import os
+import sys
 
 """
 def random_MPS(n, bdim=2, r=(-0.5, 0.5)):
@@ -236,6 +238,7 @@ def avg_entropy(n, p, bdim=2, repeat=10, mode="all_one", entropy_type="renyi-2")
 
     return np.average(es), np.std(es)
 
+"""
 def avg_entropy_nlist(nlist, p, bdim=2, repeat=10, mode="all_one", prt=False, entropy_type="renyi-2"):
     avgs = []
     stds = []
@@ -250,16 +253,31 @@ def avg_entropy_nlist(nlist, p, bdim=2, repeat=10, mode="all_one", prt=False, en
     if prt:
         print()
     return avgs, stds
+"""
 
-def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=False, entropy_type="renyi-2"):
+def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=False, entropy_type="renyi-2", filename=None):
     n_num, p_num = len(nlist), len(plist)
-    avg_table, std_table = np.zeros((n_num, p_num)), np.zeros((n_num, p_num))
+    avg_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
+    std_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
+
+    if filename == None:
+        script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+        filename = script_directory + f"/{mode}.npz"
+    np.savez(filename, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
     for (i, p) in enumerate(plist):
         if prt:
             print(f"-------p = {p}-------")
-        pavgs, pstds = avg_entropy_nlist(nlist, p, bdim, repeat, mode, prt, entropy_type)
-        avg_table[:, i] = pavgs
-        std_table[:, i] = pstds
+            print("Finished: ", end="")
+        for (j, n) in enumerate(nlist):
+            avg, std = avg_entropy(n, p, bdim, repeat, mode, entropy_type)
+            #pavgs, pstds = avg_entropy_nlist(nlist, p, bdim, repeat, mode, prt, entropy_type)
+            avg_table[j, i] = avg
+            std_table[j, i] = std
+            if prt:
+                print(f"{n}", end = " ")
+            np.savez(filename, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+        if prt:
+            print()
     return avg_table, std_table
 
 if __name__ == "__main__":

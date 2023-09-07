@@ -1,6 +1,9 @@
-from positive_TN_src import *
-import os
 import sys
+import os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
+
+from positive_TN_src import *
+
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 npz_directory = script_directory + '/all_one.npz'
 with open(npz_directory, 'a+') as f:
