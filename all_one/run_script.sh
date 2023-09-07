@@ -10,6 +10,7 @@
 #SBATCH --exclusive
 #SBATCH -x pauling[001-002]
 #SBATCH --mem=100G
+#SBATCH --ntasks=3
 export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 # mkdir /scratch/local/Chriscrosser/
 
