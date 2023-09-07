@@ -13,7 +13,7 @@
 export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 # mkdir /scratch/local/Chriscrosser/
 
-srun --exclusive --ntasks=1 python -u positive_TN_script.py 2 [10,20,30] 10 50 > 2_[10,15,20]_10_50.txt
-srun --exclusive --ntasks=1 python -u positive_TN_script.py 3 [10,20,30] 10 50 > 3_[10,15,20]_10_50.txt
-srun --exclusive --ntasks=1 python -u positive_TN_script.py 4 [10,20,30] 10 50 > 4_[10,15,20]_10_50.txt
+srun --exclusive --ntasks=1 python -u all_one_script.py 2 [10,15,20] 10 50 > 2_[10,15,20]_10_50.txt
+srun --exclusive --ntasks=1 python -u all_one_script.py 3 [10,15,20] 10 50 > 3_[10,15,20]_10_50.txt
+srun --exclusive --ntasks=1 python -u all_one_script.py 4 [10,15,20] 10 50 > 4_[10,15,20]_10_50.txt
 wait
