@@ -4,7 +4,6 @@ import quimb as qu
 import quimb.tensor as qtn
 from matplotlib import pyplot as plt
 import scipy.stats as stats
-from distfit import distfit
 
 """
 def random_MPS(n, bdim=2, r=(-0.5, 0.5)):
