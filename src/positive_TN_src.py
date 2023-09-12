@@ -123,7 +123,7 @@ def rand_MPS(n, rand_fn, bdim=2, tensorwise=True):
             arrays[r] = t
     return qtn.MatrixProductState(arrays)
 
-def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2"):
+def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", width_mode="full"):
     """
     #rand_fn = lambda: (1-p)*(np.random.random()*2-1) + p   
     #rand_fn = lambda: (1-p)*(np.random.normal()) + p
@@ -214,8 +214,13 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2"):
 
     mps = rand_MPS(n, rand_fn_mps, bdim, tensorwise=True)
     mpos = []
-    #for _ in range(int(np.ceil(n/2)) - 1):
-    for _ in range(n-1):
+    if width_mode == "full":
+        it = range(n-1)
+    elif width_mode == "half":
+        it = range(int(np.ceil(n/2)) - 1)
+    elif width_mode == "double":
+        it = range(2*n-1)
+    for _ in it:
         mpos.append(rand_MPO(n, rand_fn_mpo, bdim, tensorwise=True))
 
     mps_out = mps
@@ -231,10 +236,10 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2"):
         S = S[S > 0.0]
         return -np.log(np.sum(S**2))
 
-def avg_entropy(n, p, bdim=2, repeat=10, mode="all_one", entropy_type="renyi-2"):
+def avg_entropy(n, p, bdim=2, repeat=10, mode="all_one", entropy_type="renyi-2", width_mode="full"):
     es = []
     for _ in range(repeat):
-        es.append(boundary_mps_entropy(n, p, bdim, mode, entropy_type))
+        es.append(boundary_mps_entropy(n, p, bdim, mode, entropy_type, width_mode))
 
     return np.average(es), np.std(es)
 
@@ -255,7 +260,7 @@ def avg_entropy_nlist(nlist, p, bdim=2, repeat=10, mode="all_one", prt=False, en
     return avgs, stds
 """
 
-def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=False, entropy_type="renyi-2", filename=None):
+def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=True, save_prt=True, entropy_type="renyi-2", filename=None, width_mode="full"):
     n_num, p_num = len(nlist), len(plist)
     avg_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
     std_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
@@ -263,23 +268,35 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=Fals
     script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
     if filename == None:
         file_directory = script_directory + f"/{mode}.npz"
+        txt_directory = script_directory + f"/{mode}.txt"
     else:
         file_directory = script_directory + f"/{filename}.npz"
+        txt_directory = script_directory + f"/{filename}.txt"
     np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
     for (i, p) in enumerate(plist):
         if prt:
             print(f"-------p = {p}-------")
             print("Finished: ", end="")
+        if save_prt:
+            with open(txt_directory, "a+") as f:
+                f.write(f"-------p = {p}-------\n")
+                f.write("Finished: ")
         for (j, n) in enumerate(nlist):
-            avg, std = avg_entropy(n, p, bdim, repeat, mode, entropy_type)
+            avg, std = avg_entropy(n, p, bdim, repeat, mode, entropy_type, width_mode)
             #pavgs, pstds = avg_entropy_nlist(nlist, p, bdim, repeat, mode, prt, entropy_type)
             avg_table[j, i] = avg
             std_table[j, i] = std
             if prt:
                 print(f"{n}", end = " ")
+            if save_prt:
+                with open(txt_directory, "a+") as f:
+                    f.write(f"{n} ")
             np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
         if prt:
             print()
+        if save_prt:
+            with open(txt_directory, "a+") as f:
+                f.write(f"\n")
     return avg_table, std_table
 
 def plot_npz(filenames):
@@ -346,6 +363,7 @@ def plot_npz(filenames):
                     capthick = 2)
         [bar.set_alpha(0.5) for bar in bars]
         [cap.set_alpha(0.5) for cap in caps]
+        #ax.axhline(y=np.log10(d**(n//2)), linestyle='--', label='_nolegend_')
     
     ax.axhline(y=0 , color='r', linestyle='--', label='_nolegend_')
     #ax.legend()
@@ -359,7 +377,6 @@ def plot_npz(filenames):
 
 if __name__ == "__main__":
    plot_npz(["/../all_one/2_[8,10,12]_10_50.npz", "/../all_one/2_[14]_10_50.npz"])
-   #plt.show()
-
-   plot_npz(["/../all_one/3_[8,10,12]_10_50.npz"])
+   plot_npz(["/../all_one/3_[8,10,12]_10_50.npz", "/../all_one/3_[14]_10_50.npz"])
+   plot_npz(["/../all_one/4_[8,10,12]_10_50.npz"])
    plt.show()
