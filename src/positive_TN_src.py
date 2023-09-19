@@ -220,6 +220,10 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", w
         it = range(int(np.ceil(n/2)) - 1)
     elif width_mode == "double":
         it = range(2*n-1)
+    elif width_mode == "quarter":
+        it = range(int(np.ceil(n/4)) - 1)
+    else:
+        it = range(width_mode)
     for _ in it:
         mpos.append(rand_MPO(n, rand_fn_mpo, bdim, tensorwise=True))
 
@@ -367,16 +371,81 @@ def plot_npz(filenames):
     
     ax.axhline(y=0 , color='r', linestyle='--', label='_nolegend_')
     #ax.legend()
-
-    plt.title(f"Entanglement of d={d} n by n grid")
+    if "half" in filename:
+        plt.title(f"Entanglement of d={d} n by n/2 grid")
+    elif "half" in filename:
+        plt.title(f"Entanglement of d={d} n by 2n grid")
+    else:
+        plt.title(f"Entanglement of d={d} n by n grid")
     plt.xlabel("p*d^3")
     plt.ylabel("Renyi-2 entropy")
     plt.legend([f"n={n}" for n in nlist], loc="upper right", ncol=2)
 
     return fig, ax
 
+def combine_npz(filenames):
+    npz_directorys = []
+    if type(filenames) == str:
+        filenames = [filenames]
+
+    d, nlist, plist, avg_table, std_table = None, None, None, None, None
+    for filename in filenames:
+        script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+        npz_directory = script_directory + f'{filename}'
+        npz_directorys.append(npz_directory)
+        npz = np.load(npz_directory)
+
+        if d is None:
+            d = npz['d'][0]
+        else:
+            assert d == npz['d'][0], "bond dimension must match"
+        
+        if plist is None:
+            plist = npz['plist']
+        else:
+            assert all(plist == plist), "plist must match"
+                
+        if nlist is None:
+            nlist = npz['nlist']
+        else:
+            nlist = np.append(nlist, npz['nlist'])
+        
+        if avg_table is None:
+            avg_table = npz['avg_table']
+        else:
+            avg_table = np.append(avg_table, npz['avg_table'], axis=0)
+
+        if std_table is None:
+            std_table = npz['std_table']
+        else:
+            std_table = np.append(std_table, npz['std_table'], axis=0)
+
+    script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+    npz_name = f"{d}_[{','.join([str(n) for n in nlist])}]_{len(plist)}_50"
+    npz_directory = script_directory + f'/{npz_name}.npz'
+    with open(npz_directory, 'wb') as f:
+        np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+
 if __name__ == "__main__":
-   plot_npz(["/../all_one/2_[8,10,12]_10_50.npz", "/../all_one/2_[14]_10_50.npz"])
-   plot_npz(["/../all_one/3_[8,10,12]_10_50.npz", "/../all_one/3_[14]_10_50.npz"])
-   plot_npz(["/../all_one/4_[8,10,12]_10_50.npz"])
-   plt.show()
+    from pathlib import Path
+    p = Path(__file__).with_name('file.data')
+    with p.open('r') as f:
+        strs = f.read().split('\n')
+        st = [s.split() for s in strs][:-1]
+        sta = np.array([(float(s[0]), float(s[1])) for s in st])
+
+
+    #"""
+    plot_npz(["/../all_one/2_[8,10,12,14]_10_50.npz"])
+    plot_npz(["/../all_one/3_[8,10,12,14]_10_50.npz"])
+    fig, ax = plot_npz(["/../all_one/4_[8,10,12]_10_50.npz"])
+    ax.plot(sta[:, 0], -np.log(sta[:, 1]))
+    ax.axvline(sta[:, 0][np.argmin(sta[:, 1])], color='r', linestyle='dashed', label = 'transition point')
+    #"""
+
+    #"""
+    plot_npz(["/../all_one/2_[8,10,12,14,16]_10_50_half.npz"])
+    plot_npz(["/../all_one/3_[8,10,12,14,16]_10_50_half.npz"])
+    plot_npz(["/../all_one/4_[8,10,12]_10_50_half.npz"])
+    #"""
+    plt.show()
