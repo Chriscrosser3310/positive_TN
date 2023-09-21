@@ -158,6 +158,14 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", w
     
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
+    
+    elif mode == "rand_positive":
+
+        p_mat = np.random.random((bdim, bdim, bdim, bdim))
+        p_mat = p_mat/np.sqrt(bdim**4/np.sum(p_mat ** 2))
+
+        rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
+        rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
     # mode == ("rand_PSD", r) where r is an integer indicating the physical-bond rank
     # p = [l, u]
