@@ -144,6 +144,12 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", w
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
+    if mode == "all_one_ortho":
+        p_mat = np.ones((bdim, bdim, bdim, bdim))
+
+        rand_fn_mps = lambda: stats.ortho_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
+        rand_fn_mpo = lambda: stats.ortho_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
+
     elif mode == "rand_rank_one":
         u1 = stats.unitary_group.rvs(bdim)
         u2 = stats.unitary_group.rvs(bdim)
@@ -435,6 +441,8 @@ def combine_npz(filenames):
         np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
 
 if __name__ == "__main__":
+
+    '''
     from pathlib import Path
     p = Path(__file__).with_name('file.data')
     with p.open('r') as f:
@@ -456,4 +464,17 @@ if __name__ == "__main__":
     plot_npz(["/../all_one/3_[8,10,12,14,16]_10_50_half.npz"])
     plot_npz(["/../all_one/4_[8,10,12]_10_50_half.npz"])
     #"""
+    plt.show()
+    '''
+
+    '''
+    plot_npz(["/../diff_modes/3_[12]_10_50_full_all_one.npz"])
+    plot_npz(["/../diff_modes/3_[12]_10_50_full_rand_positive.npz"])
+    plot_npz(["/../diff_modes/3_[12]_10_50_full_rand_rank_one.npz"])
+    plt.show()
+    '''
+
+    plot_npz(["/../all_one/2_[8,12,16,20]_10_50_quarter.npz", "/../all_one/2_[24,28]_10_50_quarter.npz"])
+    plot_npz(["/../all_one/3_[8,12,16,20]_10_50_quarter.npz", "/../all_one/3_[24,28]_10_50_quarter.npz"])
+    plot_npz(["/../all_one/4_[8,12,16]_10_50_quarter.npz"])
     plt.show()
