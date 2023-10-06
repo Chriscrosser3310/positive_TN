@@ -237,7 +237,7 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", w
     elif width_mode == "quarter":
         it = range(int(np.ceil(n/4)) - 1)
     else:
-        it = range(width_mode)
+        it = range(int(width_mode))
     for _ in it:
         mpos.append(rand_MPO(n, rand_fn_mpo, bdim, tensorwise=True))
 
