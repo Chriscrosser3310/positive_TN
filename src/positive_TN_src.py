@@ -337,7 +337,11 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=True
                         mps_out_ns = mp_abs(mpo).apply(mps_out_ns, compress=True, cutoff=1E-15)
                         mps_out_ns.normalize()
 
-                    mps_zero = qtn.MPS_computational_state("0"*n)
+                    
+                    azero = np.zeros(bdim)
+                    azero[0] = 1.
+                    azero = np.array([[azero]])
+                    mps_zero = qtn.MatrixProductState([azero[0]] + [azero]*(n-2) + [azero[0]])
                     e = np.real((mps_zero @ mps_out) / (mps_zero @ mps_out_ns))
                     #print(f"sign-problem img of contracted value: {np.imag(e)}")
                 
