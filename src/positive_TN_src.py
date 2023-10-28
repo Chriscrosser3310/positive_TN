@@ -123,7 +123,7 @@ def rand_MPS(n, rand_fn, bdim=2, tensorwise=True):
             arrays[r] = t
     return qtn.MatrixProductState(arrays)
 
-def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", width_mode="full"):
+def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
     """
     #rand_fn = lambda: (1-p)*(np.random.random()*2-1) + p   
     #rand_fn = lambda: (1-p)*(np.random.normal()) + p
@@ -239,21 +239,14 @@ def boundary_mps_entropy(n, p, bdim=2, mode="all_one", entropy_type="renyi-2", w
     else:
         it = range(int(width_mode))
     for _ in it:
-        mpos.append(rand_MPO(n, rand_fn_mpo, bdim, tensorwise=True))
+        mpo = rand_MPO(n, rand_fn_mpo, bdim, tensorwise=True)
+        mpos.append(mpo)
+    
+    return mps, mpos
 
-    mps_out = mps
-    mps_out.normalize()
-    for mpo in mpos:
-        mps_out = mpo.apply(mps_out, compress=True, cutoff=1E-15)
-        mps_out.normalize()
-    #mps_out.show()
-    if entropy_type == "von Neumann":
-        return mps_out.entropy(n//2)
-    elif entropy_type == "renyi-2":
-        S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
-        S = S[S > 0.0]
-        return -np.log(np.sum(S**2))
+ 
 
+"""
 def avg_entropy(n, p, bdim=2, repeat=10, mode="all_one", entropy_type="renyi-2", width_mode="full"):
     es = []
     for _ in range(repeat):
@@ -261,7 +254,7 @@ def avg_entropy(n, p, bdim=2, repeat=10, mode="all_one", entropy_type="renyi-2",
 
     return np.average(es), np.std(es)
 
-"""
+
 def avg_entropy_nlist(nlist, p, bdim=2, repeat=10, mode="all_one", prt=False, entropy_type="renyi-2"):
     avgs = []
     stds = []
@@ -300,8 +293,56 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=True
                 f.write(f"-------p = {p}-------\n")
                 f.write("Finished: ")
         for (j, n) in enumerate(nlist):
-            avg, std = avg_entropy(n, p, bdim, repeat, mode, entropy_type, width_mode)
+            #avg, std = avg_entropy(n, p, bdim, repeat, mode, entropy_type, width_mode)
             #pavgs, pstds = avg_entropy_nlist(nlist, p, bdim, repeat, mode, prt, entropy_type)
+            es = []
+            for _ in range(repeat):
+                mps, mpos = boundary_mps(n, p, bdim, mode, width_mode)
+
+                if entropy_type in ["von-Neumann", "renyi-2"]:
+                    mps_out = mps
+                    mps_out.normalize()
+                    for mpo in mpos:
+                        mps_out = mpo.apply(mps_out, compress=True, cutoff=1E-15)
+                        mps_out.normalize()
+                    #mps_out.show()
+
+                    e = None
+                    if entropy_type == "von-Neumann":
+                        e = mps_out.entropy(n//2)
+                    elif entropy_type == "renyi-2":
+                        S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
+                        S = S[S > 0.0]
+                        e = -np.log(np.sum(S**2))
+                elif entropy_type == "sign-problem":
+                    def mp_abs(mp):
+                        nsite = len(mps.shape)
+                        arrays = []
+                        for i in range(nsite):
+                            arrays.append(np.abs(mp[i].data))
+                        if type(mp) is qtn.tensor_1d.MatrixProductState:
+                            return qtn.MatrixProductState(arrays)
+                        elif type(mp) is qtn.tensor_1d.MatrixProductOperator:
+                            return qtn.MatrixProductOperator(arrays)
+                    mps_out = mps
+                    mps_out.normalize()
+                    for mpo in mpos:
+                        mps_out = mpo.apply(mps_out, compress=True, cutoff=1E-15)
+                        mps_out.normalize()
+                    
+                    #no sign
+                    mps_out_ns = mp_abs(mps)
+                    mps_out_ns.normalize()
+                    for mpo in mpos:
+                        mps_out_ns = mp_abs(mpo).apply(mps_out_ns, compress=True, cutoff=1E-15)
+                        mps_out_ns.normalize()
+
+                    mps_zero = qtn.MPS_computational_state("0"*n)
+                    e = np.real((mps_zero @ mps_out) / (mps_zero @ mps_out_ns))
+                    #print(f"sign-problem img of contracted value: {np.imag(e)}")
+                
+                es.append(e)
+            avg, std = np.average(es), np.std(es)
             avg_table[j, i] = avg
             std_table[j, i] = std
             if prt:
@@ -442,7 +483,7 @@ def combine_npz(filenames):
 
 if __name__ == "__main__":
 
-    '''
+    #'''
     from pathlib import Path
     p = Path(__file__).with_name('file.data')
     with p.open('r') as f:
@@ -457,24 +498,23 @@ if __name__ == "__main__":
     fig, ax = plot_npz(["/../all_one/4_[8,10,12]_10_50.npz"])
     ax.plot(sta[:, 0], -np.log(sta[:, 1]))
     ax.axvline(sta[:, 0][np.argmin(sta[:, 1])], color='r', linestyle='dashed', label = 'transition point')
+    plt.show()
     #"""
 
-    #"""
+    """
     plot_npz(["/../all_one/2_[8,10,12,14,16]_10_50_half.npz"])
     plot_npz(["/../all_one/3_[8,10,12,14,16]_10_50_half.npz"])
     plot_npz(["/../all_one/4_[8,10,12]_10_50_half.npz"])
-    #"""
+    
     plt.show()
-    '''
 
-    '''
     plot_npz(["/../diff_modes/3_[12]_10_50_full_all_one.npz"])
     plot_npz(["/../diff_modes/3_[12]_10_50_full_rand_positive.npz"])
     plot_npz(["/../diff_modes/3_[12]_10_50_full_rand_rank_one.npz"])
     plt.show()
-    '''
 
     plot_npz(["/../all_one/2_[8,12,16,20]_10_50_quarter.npz", "/../all_one/2_[24,28]_10_50_quarter.npz"])
     plot_npz(["/../all_one/3_[8,12,16,20]_10_50_quarter.npz", "/../all_one/3_[24,28]_10_50_quarter.npz"])
     plot_npz(["/../all_one/4_[8,12,16]_10_50_quarter.npz"])
     plt.show()
+    """
