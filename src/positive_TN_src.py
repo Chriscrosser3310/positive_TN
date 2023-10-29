@@ -310,6 +310,7 @@ def avg_entropy_nplist(nlist,
             for _ in range(repeat):
                 mps, mpos = boundary_mps(n, p, bdim, site_mode, width_mode)
 
+                e = None
                 if entropy_type in ["von-Neumann", "renyi-2"]:
                     mps_out = mps
                     mps_out.normalize()
@@ -318,7 +319,6 @@ def avg_entropy_nplist(nlist,
                         mps_out.normalize()
                     #mps_out.show()
 
-                    e = None
                     if entropy_type == "von-Neumann":
                         e = mps_out.entropy(n//2)
                     elif entropy_type == "renyi-2":
@@ -335,6 +335,7 @@ def avg_entropy_nplist(nlist,
                             return qtn.MatrixProductState(arrays)
                         elif type(mp) is qtn.tensor_1d.MatrixProductOperator:
                             return qtn.MatrixProductOperator(arrays)
+                    
                     mps_out = mps
                     mps_out.normalize()
                     for mpo in mpos:
@@ -373,7 +374,7 @@ def avg_entropy_nplist(nlist,
                 f.write(f"\n")
     return avg_table, std_table
 
-def plot_npz(filenames):
+def plot_npz(filenames, error_bar=True):
     npz_directorys = []
     if type(filenames) == str:
         filenames = [filenames]
@@ -426,18 +427,26 @@ def plot_npz(filenames):
 
     fig, ax = plt.subplots(figsize=(8, 4), alpha=0)
     
-    for i, n in enumerate(nlist):
-        markers, caps, bars = ax.errorbar(x = scaled_plist,
-                    y = avg_table[i, :], 
-                    yerr = std_table[i, :],
-                    label = n,
-                    capsize = 5, 
-                    elinewidth = 2,
-                    markeredgewidth = 7, 
-                    capthick = 2)
-        [bar.set_alpha(0.5) for bar in bars]
-        [cap.set_alpha(0.5) for cap in caps]
-        #ax.axhline(y=np.log10(d**(n//2)), linestyle='--', label='_nolegend_')
+    if error_bar:
+        for i, n in enumerate(nlist):
+            markers, caps, bars = ax.errorbar(x = scaled_plist,
+                        y = avg_table[i, :], 
+                        yerr = std_table[i, :],
+                        label = n,
+                        capsize = 5, 
+                        elinewidth = 2,
+                        markeredgewidth = 7, 
+                        capthick = 2)
+            [bar.set_alpha(0.5) for bar in bars]
+            [cap.set_alpha(0.5) for cap in caps]
+            #ax.axhline(y=np.log10(d**(n//2)), linestyle='--', label='_nolegend_')
+    else:
+        for i, n in enumerate(nlist):
+            ax.plot(scaled_plist,
+                        avg_table[i, :], 
+                        label = n,
+                        markeredgewidth = 7)
+            #ax.axhline(y=np.log10(d**(n//2)), linestyle='--', label='_nolegend_')
     
     ax.axhline(y=0 , color='r', linestyle='--', label='_nolegend_')
     #ax.legend()
@@ -536,7 +545,7 @@ if __name__ == "__main__":
     plt.show()
     """
 
-    #fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_ortho.npz")
-    fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_sign-problem.npz")
+    #fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_ortho.npz", False)
+    #fig1, ax1 = plot_npz("/../all_one/2_[8,10,12,14]_10_50_full_all_one_sign-problem_0.npz", False)
     #fig2, ax2 = plot_npz("/../all_one/3_[8,10,12,14]_10_50.npz")
     plt.show()
