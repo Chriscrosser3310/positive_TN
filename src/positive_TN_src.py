@@ -337,17 +337,17 @@ def avg_entropy_nplist(nlist,
                             return qtn.MatrixProductOperator(arrays)
                     
                     mps_out = mps
-                    mps_out.normalize()
+                    #mps_out.normalize()
                     for mpo in mpos:
                         mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
-                        mps_out.normalize()
+                        #mps_out.normalize()
                     
                     #no sign
                     mps_out_ns = mp_abs(mps)
-                    mps_out_ns.normalize()
+                    #mps_out_ns.normalize()
                     for mpo in mpos:
                         mps_out_ns = mp_abs(mpo).apply(mps_out_ns, compress=True, cutoff=cutoff)
-                        mps_out_ns.normalize()
+                        #mps_out_ns.normalize()
 
                     
                     azero = np.zeros(bdim)
@@ -547,5 +547,5 @@ if __name__ == "__main__":
 
     #fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_ortho.npz", False)
     #fig1, ax1 = plot_npz("/../all_one/2_[8,10,12,14]_10_50_full_all_one_sign-problem_0.npz", False)
-    #fig2, ax2 = plot_npz("/../all_one/3_[8,10,12,14]_10_50.npz")
+    fig2, ax2 = plot_npz("/../key_data/sign-problem/3_[10]_[0,2,10]_50_full_all-one_sign-problem_0.npz")
     plt.show()
