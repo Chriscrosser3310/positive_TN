@@ -173,7 +173,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
-    # mode == ("rand_PSD", r) where r is an integer indicating the physical-bond rank
+    # site_mode == ("rand_PSD", r) where r is an integer indicating the physical-bond rank
     # p = [l, u]
     elif site_mode[0] == "rand_PSD":
         r = site_mode[1]
@@ -275,7 +275,7 @@ def avg_entropy_nplist(nlist,
                        plist, 
                        bdim=2, 
                        repeat=20, 
-                       mode="all_one", 
+                       site_mode="all_one", 
                        prt=True, 
                        save_prt=True, 
                        entropy_type="renyi-2", 
@@ -289,8 +289,8 @@ def avg_entropy_nplist(nlist,
 
     script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
     if filename == None:
-        file_directory = script_directory + f"/{mode}.npz"
-        txt_directory = script_directory + f"/{mode}.txt"
+        file_directory = script_directory + f"/{site_mode}.npz"
+        txt_directory = script_directory + f"/{site_mode}.txt"
     else:
         file_directory = script_directory + f"/{filename}.npz"
         txt_directory = script_directory + f"/{filename}.txt"
@@ -304,17 +304,17 @@ def avg_entropy_nplist(nlist,
                 f.write(f"-------p = {p}-------\n")
                 f.write("Finished: ")
         for (j, n) in enumerate(nlist):
-            #avg, std = avg_entropy(n, p, bdim, repeat, mode, entropy_type, width_mode)
-            #pavgs, pstds = avg_entropy_nlist(nlist, p, bdim, repeat, mode, prt, entropy_type)
+            #avg, std = avg_entropy(n, p, bdim, repeat, site_mode, entropy_type, width_mode)
+            #pavgs, pstds = avg_entropy_nlist(nlist, p, bdim, repeat, site_mode, prt, entropy_type)
             es = []
             for _ in range(repeat):
-                mps, mpos = boundary_mps(n, p, bdim, mode, width_mode)
+                mps, mpos = boundary_mps(n, p, bdim, site_mode, width_mode)
 
                 if entropy_type in ["von-Neumann", "renyi-2"]:
                     mps_out = mps
                     mps_out.normalize()
                     for mpo in mpos:
-                        mps_out = mpo.apply(mps_out, compress=True, cutoff=1E-15)
+                        mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
                         mps_out.normalize()
                     #mps_out.show()
 
