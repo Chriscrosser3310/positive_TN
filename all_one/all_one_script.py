@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 
 from positive_TN_src import *
 
-#python -u all_one_script.py d nlist pnum repeat width_mode site_mode entropy_type cutoff
+#python -u all_one_script.py d nlist ptuple repeat width_mode site_mode entropy_type cutoff
 
 d = int(sys.argv[1])
 nlist = eval(sys.argv[2])
