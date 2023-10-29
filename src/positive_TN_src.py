@@ -123,7 +123,7 @@ def rand_MPS(n, rand_fn, bdim=2, tensorwise=True):
             arrays[r] = t
     return qtn.MatrixProductState(arrays)
 
-def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
+def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
     """
     #rand_fn = lambda: (1-p)*(np.random.random()*2-1) + p   
     #rand_fn = lambda: (1-p)*(np.random.normal()) + p
@@ -138,19 +138,19 @@ def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
     rand_fn_mps = None
     rand_fn_mpo = None
     
-    if mode == "all_one":
+    if site_mode == "all_one":
         p_mat = np.ones((bdim, bdim, bdim, bdim))
 
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
-    if mode == "all_one_ortho":
+    if site_mode == "all_one_ortho":
         p_mat = np.ones((bdim, bdim, bdim, bdim))
 
         rand_fn_mps = lambda: stats.ortho_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.ortho_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
-    elif mode == "rand_rank_one":
+    elif site_mode == "rand_rank_one":
         u1 = stats.unitary_group.rvs(bdim)
         u2 = stats.unitary_group.rvs(bdim)
         u3 = stats.unitary_group.rvs(bdim)
@@ -165,7 +165,7 @@ def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
     
-    elif mode == "rand_positive":
+    elif site_mode == "rand_positive":
 
         p_mat = np.random.random((bdim, bdim, bdim, bdim))
         p_mat = p_mat/np.sqrt(bdim**4/np.sum(p_mat ** 2))
@@ -175,8 +175,8 @@ def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
 
     # mode == ("rand_PSD", r) where r is an integer indicating the physical-bond rank
     # p = [l, u]
-    elif mode[0] == "rand_PSD":
-        r = mode[1]
+    elif site_mode[0] == "rand_PSD":
+        r = site_mode[1]
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
@@ -192,8 +192,8 @@ def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
         rand_fn_mps = temp_mps
         rand_fn_mpo = temp_mpo
 
-    elif mode[0] == "rand_PSD_diag":
-        r = mode[1]
+    elif site_mode[0] == "rand_PSD_diag":
+        r = site_mode[1]
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
@@ -207,9 +207,9 @@ def boundary_mps(n, p, bdim=2, mode="all_one", width_mode="full"):
         rand_fn_mps = temp_mps
         rand_fn_mpo = temp_mpo
 
-    elif mode[0] == "rand_PSD + positive":
-        r = mode[1]
-        p2 = mode[2]
+    elif site_mode[0] == "rand_PSD + positive":
+        r = site_mode[1]
+        p2 = site_mode[2]
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
@@ -271,7 +271,18 @@ def avg_entropy_nlist(nlist, p, bdim=2, repeat=10, mode="all_one", prt=False, en
     return avgs, stds
 """
 
-def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=True, save_prt=True, entropy_type="renyi-2", filename=None, width_mode="full"):
+def avg_entropy_nplist(nlist, 
+                       plist, 
+                       bdim=2, 
+                       repeat=20, 
+                       mode="all_one", 
+                       prt=True, 
+                       save_prt=True, 
+                       entropy_type="renyi-2", 
+                       filename=None, 
+                       width_mode="full",
+                       cutoff=1E-15):
+    
     n_num, p_num = len(nlist), len(plist)
     avg_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
     std_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
@@ -327,14 +338,14 @@ def avg_entropy_nplist(nlist, plist, bdim=2, repeat=20, mode="all_one", prt=True
                     mps_out = mps
                     mps_out.normalize()
                     for mpo in mpos:
-                        mps_out = mpo.apply(mps_out, compress=True, cutoff=1E-15)
+                        mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
                         mps_out.normalize()
                     
                     #no sign
                     mps_out_ns = mp_abs(mps)
                     mps_out_ns.normalize()
                     for mpo in mpos:
-                        mps_out_ns = mp_abs(mpo).apply(mps_out_ns, compress=True, cutoff=1E-15)
+                        mps_out_ns = mp_abs(mpo).apply(mps_out_ns, compress=True, cutoff=cutoff)
                         mps_out_ns.normalize()
 
                     
@@ -430,6 +441,7 @@ def plot_npz(filenames):
     
     ax.axhline(y=0 , color='r', linestyle='--', label='_nolegend_')
     #ax.legend()
+    """
     if "half" in filename:
         plt.title(f"Entanglement of d={d} n by n/2 grid")
     elif "half" in filename:
@@ -439,6 +451,7 @@ def plot_npz(filenames):
     plt.xlabel("p*d^3")
     plt.ylabel("Renyi-2 entropy")
     plt.legend([f"n={n}" for n in nlist], loc="upper right", ncol=2)
+    """
 
     return fig, ax
 
@@ -487,23 +500,23 @@ def combine_npz(filenames):
 
 if __name__ == "__main__":
 
-    #'''
+    '''
     from pathlib import Path
     p = Path(__file__).with_name('file.data')
     with p.open('r') as f:
         strs = f.read().split('\n')
         st = [s.split() for s in strs][:-1]
         sta = np.array([(float(s[0]), float(s[1])) for s in st])
+    '''
 
-
-    #"""
+    """
     plot_npz(["/../all_one/2_[8,10,12,14]_10_50.npz"])
     plot_npz(["/../all_one/3_[8,10,12,14]_10_50.npz"])
     fig, ax = plot_npz(["/../all_one/4_[8,10,12]_10_50.npz"])
     ax.plot(sta[:, 0], -np.log(sta[:, 1]))
     ax.axvline(sta[:, 0][np.argmin(sta[:, 1])], color='r', linestyle='dashed', label = 'transition point')
     plt.show()
-    #"""
+    """
 
     """
     plot_npz(["/../all_one/2_[8,10,12,14,16]_10_50_half.npz"])
@@ -522,3 +535,8 @@ if __name__ == "__main__":
     plot_npz(["/../all_one/4_[8,12,16]_10_50_quarter.npz"])
     plt.show()
     """
+
+    #fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_ortho.npz")
+    fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_sign-problem.npz")
+    #fig2, ax2 = plot_npz("/../all_one/3_[8,10,12,14]_10_50.npz")
+    plt.show()
