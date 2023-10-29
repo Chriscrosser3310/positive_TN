@@ -8,7 +8,8 @@ from positive_TN_src import *
 
 d = int(sys.argv[1])
 nlist = eval(sys.argv[2])
-plist = np.linspace(0, 2/d**3, int(sys.argv[3]), endpoint=True)
+ptuple = eval(sys.argv[3])
+plist = np.linspace(ptuple[0], ptuple[1]/d**3, int(ptuple[2]), endpoint=True) #np.linspace(0, 2/d**3, int(sys.argv[3]), endpoint=True)
 repeat = int(sys.argv[4])
 width_mode = sys.argv[5]
 site_mode = sys.argv[6]
