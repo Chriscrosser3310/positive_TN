@@ -138,19 +138,19 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
     rand_fn_mps = None
     rand_fn_mpo = None
     
-    if site_mode == "all_one":
+    if site_mode == "all-one":
         p_mat = np.ones((bdim, bdim, bdim, bdim))
 
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
-    if site_mode == "all_one_ortho":
+    if site_mode == "all-one-ortho":
         p_mat = np.ones((bdim, bdim, bdim, bdim))
 
         rand_fn_mps = lambda: stats.ortho_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.ortho_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
-    elif site_mode == "rand_rank_one":
+    elif site_mode == "rand-rank-one":
         u1 = stats.unitary_group.rvs(bdim)
         u2 = stats.unitary_group.rvs(bdim)
         u3 = stats.unitary_group.rvs(bdim)
@@ -165,7 +165,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
     
-    elif site_mode == "rand_positive":
+    elif site_mode == "rand-positive":
 
         p_mat = np.random.random((bdim, bdim, bdim, bdim))
         p_mat = p_mat/np.sqrt(bdim**4/np.sum(p_mat ** 2))
@@ -173,9 +173,9 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
 
-    # site_mode == ("rand_PSD", r) where r is an integer indicating the physical-bond rank
+    # site_mode == ("rand-PSD", r) where r is an integer indicating the physical-bond rank
     # p = [l, u]
-    elif site_mode[0] == "rand_PSD":
+    elif site_mode[0] == "rand-PSD":
         r = site_mode[1]
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
@@ -192,7 +192,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = temp_mps
         rand_fn_mpo = temp_mpo
 
-    elif site_mode[0] == "rand_PSD_diag":
+    elif site_mode[0] == "rand-PSD-diag":
         r = site_mode[1]
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
@@ -207,7 +207,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = temp_mps
         rand_fn_mpo = temp_mpo
 
-    elif site_mode[0] == "rand_PSD + positive":
+    elif site_mode[0] == "rand-PSD-positive":
         r = site_mode[1]
         p2 = site_mode[2]
         def temp_mpo():
