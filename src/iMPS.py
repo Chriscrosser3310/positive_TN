@@ -123,12 +123,17 @@ def pTN_steady(d, mu, cutoff=1E-15, maxbond=7, maxiter=10, return_boundary_num=T
     
     if return_boundary_num:
         R0 = Gp[:, :, 0] @ lp
+        R1 = Gp[:, :, 1] @ lp
         L1 = lp @ Gp[:, :, 1]
         L0 = lp @ Gp[:, :, 0]
 
         R0_evals, R0_evecs = np.linalg.eig(R0)
         etaR0 = R0_evals.max()
         vecR0 = R0_evecs[:, R0_evals.argmax()]
+
+        R1_evals, R1_evecs = np.linalg.eig(R1)
+        etaR1 = R1_evals.max()
+        vecR1 = R1_evecs[:, R1_evals.argmax()]
 
         L1T_evals, L1T_evecs = np.linalg.eig(L1.T)
         etaL1 = L1T_evals.max()
@@ -138,13 +143,20 @@ def pTN_steady(d, mu, cutoff=1E-15, maxbond=7, maxiter=10, return_boundary_num=T
         etaL0 = L0T_evals.max()
         vecL0 = L0T_evecs[:, L0T_evals.argmax()]
 
-        return np.abs((vecL1.T @ lp @ vecR0)/(vecL0.T @ lp @ vecR0))#, (etaR0 * etaL1)/(etaR0 * etaL0)
+        return np.abs((vecL1.T @ lp @ vecR0)/(vecL0.T @ lp @ vecR0)), \
+               np.abs((vecL1.T @ lp @ vecR0)/(vecL1.T @ lp @ vecR1)), \
+               np.abs((vecL0.T @ lp @ vecR1)/(vecL0.T @ lp @ vecR0)), \
+               np.abs((vecL0.T @ lp @ vecR1)/(vecL1.T @ lp @ vecR1)), \
+               (etaR0 * etaL1)/(etaR0 * etaL0), \
+               (etaR0 * etaL1)/(etaR1 * etaL1), \
+               (etaR1 * etaL0)/(etaR0 * etaL0), \
+               (etaR1 * etaL0)/(etaR1 * etaL1)
 
     else:
         return Gp, lp
 
 if __name__ == "__main__":
-    #"""
+    """
     o = omega(4, 1, 3)
     g = gamma(4)
 
@@ -159,6 +171,6 @@ if __name__ == "__main__":
 
     L = np.einsum("ab,bci,de,efi->adcf", l_new, G_new, np.conj(l_new), np.conj(G_new))
     print(np.around(np.einsum("aabc -> bc ", L), 4))
-    #"""
+    """
 
-    #print(pTN_steady(3, 0.1))
+    print(np.min(pTN_steady(7, 1, maxbond=4, maxiter=20)[0:4]))
