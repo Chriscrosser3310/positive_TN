@@ -20,7 +20,10 @@ def gamma(d): return np.array([[1, 1/d, 1/d**0.5, 1/d**0.5, 1/d**1.5, 1/d**1.5, 
                                 [1/d**1.5, 1/d**0.5, 1/d, 1/d, 1/d, 1, 1/d**0.5],
                                 [1/d, 1/d, 1/d**0.5, 1/d**0.5, 1/d**0.5, 1/d**0.5, 1]])
 
-def omega(d, mu): return np.array([d**4/(d**4+1), d**4/(d**4+1), mu**2, mu**2, mu**2, mu**2, mu**4])
+def omega(d, mu, num_inds=1):
+    a = np.zeros(tuple([7]*num_inds))
+    a[np.diag_indices(7, num_inds)] = np.array([d**4/(d**4+1), d**4/(d**4+1), mu**2, mu**2, mu**2, mu**2, mu**4])
+    return a
 
 # get stats model tensor network
 def get_SM_TN(n, d, mu, boundary="half"):
@@ -56,9 +59,7 @@ def get_SM_TN(n, d, mu, boundary="half"):
             if j == 0:
                 inds.remove(f'h_{i}_{j-1}_r')
             num_inds = len(inds)
-            a = np.zeros(tuple([7]*num_inds))
-            a[np.diag_indices(7, num_inds)] = omega(d, mu)
-            t = qtn.Tensor(data=a, inds=inds, tags=("omega", f"omega_{i}_{j}"))
+            t = qtn.Tensor(data=omega(d, mu, num_inds), inds=inds, tags=("omega", f"omega_{i}_{j}"))
             omegas.append(t)
 
     tn = omegas[0]
@@ -157,8 +158,7 @@ def draw_SM_TN(n, tn, boundary="half", dist=10, legend=True, margin=0.01, *args)
         
 # stats model translational-invariant site
 def SM_TI_site(d, mu, boundary="open"):
-    a = np.zeros(tuple([7]*4))
-    a[np.diag_indices(7, 4)] = omega(d, mu)
+    a = omega(d, mu, 4)
     gs = scipy.linalg.sqrtm(gamma(d))
     
     # order: i, j, k, l == left, right, up, down
