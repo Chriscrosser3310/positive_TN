@@ -61,7 +61,7 @@ def canonicalize_iMPS(G, l, cutoff=1E-15, maxbond=None, normalize=False):
 
     Gp = np.zeros((lp.shape[0], lp.shape[1], pdim), dtype="complex128")
     for i in range(pdim):
-        Gp[:, :, i] = V @ np.linalg.inv(X) @ G[:, :, i] @ np.linalg.inv(Y.T) @ U
+        Gp[:, :, i] = V @ np.linalg.pinv(X) @ G[:, :, i] @ np.linalg.pinv(Y.T) @ U
 
     if normalize:
         lp = lp/np.sqrt(R_evals.max())
@@ -81,7 +81,8 @@ def steady_iMPS(mps_G, mps_l, mpo_G, mpo_l=None, cutoff=1E-15, maxbond=None, max
 
     mps_bdim = mps_G.shape[0]
     G_old, l_old = mps_G, mps_l
-    G_new = np.einsum("lrd,jkud->ljrku", G_old, mpo_G).reshape((mps_bdim*mpo_bdim, mps_bdim*mpo_bdim, pdim))
+    G_new = np.swapaxes(np.tensordot(G_old, mpo_G, (2, 3)), 1, 2).reshape((mps_bdim*mpo_bdim, mps_bdim*mpo_bdim, pdim))
+    #G_new = np.einsum("lrd,jkud->ljrku", G_old, mpo_G).reshape((mps_bdim*mpo_bdim, mps_bdim*mpo_bdim, pdim))
     l_new = np.kron(l_old, mpo_l)
     G_new, l_new = canonicalize_iMPS(G_new, l_new, cutoff=cutoff, maxbond=maxbond, normalize=True)
   
@@ -103,7 +104,8 @@ def steady_iMPS(mps_G, mps_l, mpo_G, mpo_l=None, cutoff=1E-15, maxbond=None, max
 
         G_old, l_old = G_new, l_new
         mps_bdim = G_old.shape[0]
-        G_new = np.einsum("lrd,jkud->ljrku", G_old, mpo_G).reshape((mps_bdim*mpo_bdim, mps_bdim*mpo_bdim, pdim))
+        G_new = np.swapaxes(np.tensordot(G_old, mpo_G, (2, 3)), 1, 2).reshape((mps_bdim*mpo_bdim, mps_bdim*mpo_bdim, pdim))
+        #G_new = np.einsum("lrd,jkud->ljrku", G_old, mpo_G).reshape((mps_bdim*mpo_bdim, mps_bdim*mpo_bdim, pdim))
         l_new = np.kron(l_old, mpo_l)
         G_new, l_new = canonicalize_iMPS(G_new, l_new, cutoff=cutoff, maxbond=maxbond, normalize=True)
     
@@ -142,7 +144,7 @@ def pTN_steady(d, mu, cutoff=1E-15, maxbond=7, maxiter=10, return_boundary_num=T
         return Gp, lp
 
 if __name__ == "__main__":
-    """
+    #"""
     o = omega(4, 1, 3)
     g = gamma(4)
 
@@ -150,13 +152,13 @@ if __name__ == "__main__":
     G = np.einsum("lrp,pk->lrk", o, l)
 
     G_old, l_old = G, l
-    G_new, l_new = canonicalize_iMPS(G, l, 0, None, True)etaR0 
+    G_new, l_new = canonicalize_iMPS(G, l, 0, None, True)
 
     R = np.einsum("abi,bc,dei,ef->adcf", G_new, l_new, np.conj(G_new), np.conj(l_new))
     print(np.around(np.einsum("abcc -> ab", R), 4))
 
     L = np.einsum("ab,bci,de,efi->adcf", l_new, G_new, np.conj(l_new), np.conj(G_new))
     print(np.around(np.einsum("aabc -> bc ", L), 4))
-    """
+    #"""
 
-    print(pTN_steady(3, 0.1))
+    #print(pTN_steady(3, 0.1))
