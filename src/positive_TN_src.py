@@ -349,7 +349,6 @@ def avg_entropy_nplist(nlist,
                         mps_out_ns = mp_abs(mpo).apply(mps_out_ns, compress=True, cutoff=cutoff)
                         #mps_out_ns.normalize()
 
-                    
                     azero = np.zeros(bdim)
                     azero[0] = 1.
                     azero = np.array([[azero]])
@@ -374,7 +373,7 @@ def avg_entropy_nplist(nlist,
                 f.write(f"\n")
     return avg_table, std_table
 
-def plot_npz(filenames, error_bar=True):
+def plot_npz(filenames, error_bar=True, log_scale=False):
     npz_directorys = []
     if type(filenames) == str:
         filenames = [filenames]
@@ -427,6 +426,8 @@ def plot_npz(filenames, error_bar=True):
 
     fig, ax = plt.subplots(figsize=(8, 4), alpha=0)
     
+    if log_scale:
+        y = np.log(y)
     if error_bar:
         for i, n in enumerate(nlist):
             markers, caps, bars = ax.errorbar(x = scaled_plist,
@@ -546,6 +547,6 @@ if __name__ == "__main__":
     """
 
     #fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_ortho.npz", False)
-    #fig1, ax1 = plot_npz("/../all_one/2_[8,10,12,14]_10_50_full_all_one_sign-problem_0.npz", False)
-    fig2, ax2 = plot_npz("/../key_data/sign-problem/3_[10]_[0,2,10]_50_full_all-one_sign-problem_0.npz")
+    fig1, ax1 = plot_npz("/../key_data/ortho/2_[8,10,12,14]_(0,2,10)_50_full_ortho_renyi-2_1e-15.npz")
+    fig2, ax2 = plot_npz("/../key_data/ortho/3_[8,10,12,14]_(0,2,10)_50_full_ortho_renyi-2_1e-15.npz")
     plt.show()
