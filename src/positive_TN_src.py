@@ -2,10 +2,12 @@ from autoray import numpy
 import numpy as np
 import quimb as qu
 import quimb.tensor as qtn
+import matplotlib
 from matplotlib import pyplot as plt
 import scipy.stats as stats
 import os
 import sys
+import math
 
 """
 def random_MPS(n, bdim=2, r=(-0.5, 0.5)):
@@ -311,21 +313,7 @@ def avg_entropy_nplist(nlist,
                 mps, mpos = boundary_mps(n, p, bdim, site_mode, width_mode)
 
                 e = None
-                if entropy_type in ["von-Neumann", "renyi-2"]:
-                    mps_out = mps
-                    mps_out.normalize()
-                    for mpo in mpos:
-                        mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
-                        mps_out.normalize()
-                    #mps_out.show()
-
-                    if entropy_type == "von-Neumann":
-                        e = mps_out.entropy(n//2)
-                    elif entropy_type == "renyi-2":
-                        S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
-                        S = S[S > 0.0]
-                        e = -np.log(np.sum(S**2))
-                elif entropy_type == "sign-problem":
+                if entropy_type == "sign-problem":
                     def mp_abs(mp):
                         nsite = len(mps.shape)
                         arrays = []
@@ -355,7 +343,21 @@ def avg_entropy_nplist(nlist,
                     mps_zero = qtn.MatrixProductState([azero[0]] + [azero]*(n-2) + [azero[0]])
                     e = np.real((mps_zero @ mps_out) / (mps_zero @ mps_out_ns))
                     #print(f"sign-problem img of contracted value: {np.imag(e)}")
-                
+                else:
+                    mps_out = mps
+                    mps_out.normalize()
+                    for mpo in mpos:
+                        mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
+                        mps_out.normalize()
+                    #mps_out.show()
+
+                    if entropy_type == "von-Neumann":
+                        e = mps_out.entropy(n//2)
+                    elif entropy_type.startswith("renyi"):
+                        k = int(entropy_type.split("-")[1])
+                        S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
+                        S = S[S > 0.0]
+                        e = 1/(1-k)*np.log(np.sum(S**(2*k)))
                 es.append(e)
             avg, std = np.average(es), np.std(es)
             avg_table[j, i] = avg
@@ -373,7 +375,7 @@ def avg_entropy_nplist(nlist,
                 f.write(f"\n")
     return avg_table, std_table
 
-def plot_npz(filenames, error_bar=True, log_scale=False):
+def plot_finite_sim(filenames, error_bar=True, log_scale=False):
     npz_directorys = []
     if type(filenames) == str:
         filenames = [filenames]
@@ -424,15 +426,18 @@ def plot_npz(filenames, error_bar=True, log_scale=False):
 
     scaled_plist = plist*d**3
 
+    x = scaled_plist
     fig, ax = plt.subplots(figsize=(8, 4), alpha=0)
     
-    if log_scale:
-        y = np.log(y)
     if error_bar:
         for i, n in enumerate(nlist):
-            markers, caps, bars = ax.errorbar(x = scaled_plist,
-                        y = avg_table[i, :], 
-                        yerr = std_table[i, :],
+            y = avg_table[i, :]
+            yerr = std_table[i, :]
+            if log_scale:
+                y = -np.log(y)
+            markers, caps, bars = ax.errorbar(x = x,
+                        y = y, 
+                        yerr = yerr,
                         label = n,
                         capsize = 5, 
                         elinewidth = 2,
@@ -443,13 +448,17 @@ def plot_npz(filenames, error_bar=True, log_scale=False):
             #ax.axhline(y=np.log10(d**(n//2)), linestyle='--', label='_nolegend_')
     else:
         for i, n in enumerate(nlist):
-            ax.plot(scaled_plist,
-                        avg_table[i, :], 
-                        label = n,
-                        markeredgewidth = 7)
+            y = avg_table[i, :]
+            if log_scale:
+                y = -np.log(y)
+            ax.plot(x,
+                    y, 
+                    label = n,
+                    markeredgewidth = 7)
             #ax.axhline(y=np.log10(d**(n//2)), linestyle='--', label='_nolegend_')
     
     ax.axhline(y=0 , color='r', linestyle='--', label='_nolegend_')
+    plt.xlabel("p*d^3")
     #ax.legend()
     """
     if "half" in filename:
@@ -458,12 +467,34 @@ def plot_npz(filenames, error_bar=True, log_scale=False):
         plt.title(f"Entanglement of d={d} n by 2n grid")
     else:
         plt.title(f"Entanglement of d={d} n by n grid")
-    plt.xlabel("p*d^3")
     plt.ylabel("Renyi-2 entropy")
     plt.legend([f"n={n}" for n in nlist], loc="upper right", ncol=2)
     """
 
     return fig, ax
+
+def plot_iMPS(filename):
+    script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+    npz_directory = script_directory + f'{filename}'
+    npz = np.load(npz_directory)
+
+    X, Y = np.meshgrid(npz['mulist'], npz['dlist'])
+    Z = npz['vals']
+    #print(Z)
+
+    Z[Z > 1] = 0.0
+
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    surf = ax.plot_surface(X, Y, Z, cmap=matplotlib.cm.coolwarm, linewidth=0, antialiased=False, vmin=-0.01, vmax=1.01)
+
+    ax.set_xlabel('mu')
+    ax.set_ylabel('d')
+    ax.set_zlabel('vals')
+
+    fig.colorbar(surf, shrink=1, aspect=5)
+
+    return fig, ax
+
 
 def combine_npz(filenames):
     npz_directorys = []
@@ -503,7 +534,9 @@ def combine_npz(filenames):
             std_table = np.append(std_table, npz['std_table'], axis=0)
 
     script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-    npz_name = f"{d}_[{','.join([str(n) for n in nlist])}]_{len(plist)}_50"
+    filename_split = filenames[0].split("_")
+    filename_split[1] = f"[{','.join([str(n) for n in nlist])}]"
+    npz_name = "_".join(filename_split) #f"{d}_[{','.join([str(n) for n in nlist])}]_{len(plist)}_50"
     npz_directory = script_directory + f'/{npz_name}.npz'
     with open(npz_directory, 'wb') as f:
         np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
@@ -534,19 +567,37 @@ if __name__ == "__main__":
     plot_npz(["/../all_one/4_[8,10,12]_10_50_half.npz"])
     
     plt.show()
-
-    plot_npz(["/../diff_modes/3_[12]_10_50_full_all_one.npz"])
-    plot_npz(["/../diff_modes/3_[12]_10_50_full_rand_positive.npz"])
-    plot_npz(["/../diff_modes/3_[12]_10_50_full_rand_rank_one.npz"])
-    plt.show()
-
-    plot_npz(["/../all_one/2_[8,12,16,20]_10_50_quarter.npz", "/../all_one/2_[24,28]_10_50_quarter.npz"])
-    plot_npz(["/../all_one/3_[8,12,16,20]_10_50_quarter.npz", "/../all_one/3_[24,28]_10_50_quarter.npz"])
-    plot_npz(["/../all_one/4_[8,12,16]_10_50_quarter.npz"])
-    plt.show()
     """
 
-    #fig1, ax1 = plot_npz("/../all_one/3_[8,10,12,14]_10_50_full_all_one_ortho.npz", False)
-    fig1, ax1 = plot_npz("/../key_data/ortho/2_[8,10,12,14]_(0,2,10)_50_full_ortho_renyi-2_1e-15.npz")
-    fig2, ax2 = plot_npz("/../key_data/ortho/3_[8,10,12,14]_(0,2,10)_50_full_ortho_renyi-2_1e-15.npz")
+    plot_finite_sim(["/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_all-one_renyi-2_1e-15.npz", 
+                     "/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_all-one-ortho_renyi-2_1e-15.npz", 
+                     "/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_rand-positive_renyi-2_1e-15.npz",
+                     "/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_rand-rank-one_renyi-2_1e-15.npz"])
+    plt.ylabel("renyi-2 entropy")
+    plt.legend(["unitary", "orthogonal", "random positive", "random rank-one"])
+    #plt.show()
+
+    fig1, ax1 = plot_finite_sim("/../key_data/ortho/2_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one-ortho_renyi-2_1E-30.npz")
+    plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
+    fig2, ax2 = plot_finite_sim("/../key_data/ortho/3_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one-ortho_renyi-2_1E-30.npz")
+    plt.title("d=3, orthogonal")
+    plt.ylabel("renyi-2")
+    plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
+
+    fig3, ax3 = plot_finite_sim("/../key_data/unitary/2_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
+    plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
+    fig4, ax4 = plot_finite_sim("/../key_data/unitary/3_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
+    plt.title("d=3, unitary")
+    plt.ylabel("renyi-2")
+    plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
+    fig4, ax4 = plot_finite_sim("/../key_data/unitary/4_[8,12,16]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
+    plt.legend(["W=2", "W=3", "W=4"])
+    
+    fig, ax = plot_iMPS("/../key_data/iMPS/iMPS_[1.5,10,18]_[0.1,2,20]_1e-15_7_10.npz")
     plt.show()
+
+    #fig1, ax1 = plot_finite_sim("/../key_data/sign-problem/2_[8,10,12,14]_[0,8,20]_50_full_all-one_sign-problem_0.npz", log_scale=True, error_bar=False)
+    #fig2, ax2 = plot_finite_sim("/../key_data/sign-problem/2_[8,10,12,14]_[0,8,20]_50_full_all-one-ortho_sign-problem_0.npz", log_scale=True, error_bar=False)
+    #plt.show()
+
+    #combine_npz(["/../key_data/unitary/3_[8,12,16,20]_(0,2,10)_50_quarter_all-one_renyi-2_1e-15.npz", "/../key_data/unitary/3_[24,28]_(0,2,10)_50_quarter_all-one_renyi-2_1e-15.npz"])
