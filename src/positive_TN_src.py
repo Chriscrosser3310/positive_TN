@@ -357,7 +357,7 @@ def avg_entropy_nplist(nlist,
                         k = int(entropy_type.split("-")[1])
                         S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
                         S = S[S > 0.0]
-                        e = 1/(1-k)*np.log(np.sum(S**(2*k)))
+                        e = 1/(1-k)*np.log(np.sum(S**k))
                 es.append(e)
             avg, std = np.average(es), np.std(es)
             avg_table[j, i] = avg
@@ -578,11 +578,19 @@ if __name__ == "__main__":
     #plt.show()
 
     fig1, ax1 = plot_finite_sim("/../key_data/ortho/2_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one-ortho_renyi-2_1E-30.npz")
+    plt.title("d=2, orthogonal")
+    plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
+    fig1, ax1 = plot_finite_sim("/../key_data/ortho/2_[8,12,16,20,24,28]_[0,2,10]_10_quarter_all-one-ortho_renyi-2_1E-15.npz")
+    plt.title("d=2, orthogonal (correct renyi-2)")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
     fig2, ax2 = plot_finite_sim("/../key_data/ortho/3_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one-ortho_renyi-2_1E-30.npz")
     plt.title("d=3, orthogonal")
     plt.ylabel("renyi-2")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
+    fig2, ax2 = plot_finite_sim("/../key_data/ortho/4_[16,20]_[0,2,20]_10_quarter_all-one-ortho_renyi-2_1e-15.npz")
+    plt.title("d=4, orthogonal")
+    plt.ylabel("renyi-2")
+    plt.legend(["W=4", "W=5"])
 
     fig3, ax3 = plot_finite_sim("/../key_data/unitary/2_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
