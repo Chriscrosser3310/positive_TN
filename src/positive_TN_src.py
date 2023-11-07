@@ -170,7 +170,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
     elif site_mode == "rand-positive":
 
         p_mat = np.random.random((bdim, bdim, bdim, bdim))
-        p_mat = p_mat/np.sqrt(bdim**4/np.sum(p_mat ** 2))
+        p_mat = p_mat*np.sqrt(bdim**4/np.sum(p_mat ** 2))
 
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
@@ -569,6 +569,12 @@ if __name__ == "__main__":
     plt.show()
     """
 
+    plot_finite_sim("/../key_data/site_mode_comparision/2_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/3_[20]_[0,12,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/4_[20]_[0,16,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/5_[20]_[0,20,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plt.show()
+
     plot_finite_sim(["/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_all-one_renyi-2_1e-15.npz", 
                      "/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_all-one-ortho_renyi-2_1e-15.npz", 
                      "/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_rand-positive_renyi-2_1e-15.npz",
@@ -580,25 +586,22 @@ if __name__ == "__main__":
     fig1, ax1 = plot_finite_sim("/../key_data/ortho/2_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one-ortho_renyi-2_1E-30.npz")
     plt.title("d=2, orthogonal")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
-    fig1, ax1 = plot_finite_sim("/../key_data/ortho/2_[8,12,16,20,24,28]_[0,2,10]_10_quarter_all-one-ortho_renyi-2_1E-15.npz")
-    plt.title("d=2, orthogonal (correct renyi-2)")
-    plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
     fig2, ax2 = plot_finite_sim("/../key_data/ortho/3_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one-ortho_renyi-2_1E-30.npz")
     plt.title("d=3, orthogonal")
     plt.ylabel("renyi-2")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
-    fig2, ax2 = plot_finite_sim("/../key_data/ortho/4_[16,20]_[0,2,20]_10_quarter_all-one-ortho_renyi-2_1e-15.npz")
-    plt.title("d=4, orthogonal")
-    plt.ylabel("renyi-2")
-    plt.legend(["W=4", "W=5"])
 
     fig3, ax3 = plot_finite_sim("/../key_data/unitary/2_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
+    plt.title("d=2, unitary")
+    plt.ylabel("renyi-2")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
     fig4, ax4 = plot_finite_sim("/../key_data/unitary/3_[8,12,16,20,24,28]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
     plt.title("d=3, unitary")
     plt.ylabel("renyi-2")
     plt.legend(["W=2", "W=3", "W=4", "W=5", "W=6", "W=7"])
-    fig4, ax4 = plot_finite_sim("/../key_data/unitary/4_[8,12,16]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz")
+    fig4, ax4 = plot_finite_sim(["/../key_data/unitary/4_[8,12,16]_[0,2,10]_50_quarter_all-one_renyi-2_1e-15.npz"])
+    plt.title("d=4, unitary")
+    plt.ylabel("renyi-2")
     plt.legend(["W=2", "W=3", "W=4"])
     
     fig, ax = plot_iMPS("/../key_data/iMPS/iMPS_[1.5,10,18]_[0.1,2,20]_1e-15_7_10.npz")
