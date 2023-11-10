@@ -167,7 +167,18 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
     
-    elif site_mode == "rand-positive":
+    elif site_mode == "rand-positive-sphere":
+
+        u = stats.unitary_group.rvs(bdim**4)
+        p_mat = np.ones(bdim**4)
+        p_mat = u @ p_mat
+        p_mat = p_mat.reshape((bdim, bdim, bdim, bdim))
+        p_mat = np.abs(p_mat)
+
+        rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
+        rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
+
+    elif site_mode == "rand-positive-renorm":
 
         p_mat = np.random.random((bdim, bdim, bdim, bdim))
         p_mat = p_mat*np.sqrt(bdim**4/np.sum(p_mat ** 2))
@@ -569,10 +580,10 @@ if __name__ == "__main__":
     plt.show()
     """
 
-    plot_finite_sim("/../key_data/site_mode_comparision/2_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
-    plot_finite_sim("/../key_data/site_mode_comparision/3_[20]_[0,12,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
-    plot_finite_sim("/../key_data/site_mode_comparision/4_[20]_[0,16,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
-    plot_finite_sim("/../key_data/site_mode_comparision/5_[20]_[0,20,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/2_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/3_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    #plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/4_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    #plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/5_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
     plt.show()
 
     plot_finite_sim(["/../key_data/site_mode_comparision/3_[10]_[0,8,40]_50_full_all-one_renyi-2_1e-15.npz", 
