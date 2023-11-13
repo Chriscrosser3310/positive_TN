@@ -185,7 +185,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
 
         rand_fn_mps = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim))[0, :, :, :] + p*p_mat[0, :, :, :]
         rand_fn_mpo = lambda: stats.unitary_group.rvs(bdim**4)[0, :].reshape((bdim, bdim, bdim, bdim)) + p*p_mat
-
+    
     # site_mode == ("rand-PSD", r) where r is an integer indicating the physical-bond rank
     # p = [l, u]
     elif site_mode[0] == "rand-PSD":
@@ -193,7 +193,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
-            D = np.diag(np.random.uniform(p[0], p[1], min(bdim**4, r)))
+            D = np.diag(np.random.uniform(0, p, min(bdim**4, r)))
             M = U[:, 0:r] @ D @ Ud[0:r, :]
             T = np.reshape(M, [bdim]*8)
             T = np.einsum("abcdijkl -> aibjckdl", T)
@@ -210,7 +210,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
-            D = np.diag(np.random.uniform(p[0], p[1], min(bdim**4, r)))
+            D = np.diag(np.random.uniform(0, p, min(bdim**4, r)))
             M = U[:, 0:r] @ D @ Ud[0:r, :]
             T = np.reshape(M, [bdim**2]*4)
             return T
@@ -226,7 +226,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
-            D = np.diag(np.random.uniform(p[0], p[1], min(bdim**4, r)))
+            D = np.diag(np.random.uniform(0, p, min(bdim**4, r)))
             M = U[:, 0:r] @ D @ Ud[0:r, :]
             T = np.reshape(M, [bdim]*8)
             T = np.einsum("abcdijkl -> aibjckdl", T)
@@ -582,6 +582,8 @@ if __name__ == "__main__":
 
     plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/2_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
     plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/3_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/2_[20]_[0,8,40]_10_quarter_rand-positive-sphere_renyi-2_1e-15.npz")
+    plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/3_[20]_[0,8,40]_10_quarter_rand-positive-sphere_renyi-2_1e-15.npz")
     #plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/4_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
     #plot_finite_sim("/../key_data/site_mode_comparision/rand-positive/5_[20]_[0,8,40]_10_quarter_rand-positive_renyi-2_1e-15.npz")
     plt.show()
