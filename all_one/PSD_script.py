@@ -37,4 +37,5 @@ with open(npz_directory, 'wb') as f:
     np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
 print("done")
 
-os.system(f"mail -a {npz_name}.npz -s 'positive_TN: {npz_name}' jchen9@caltech.edu < {npz_name}.txt")
+npz_name_2 = npz_name.replace("'", "\'")
+os.system(f"mail -a {npz_name_2}.npz -s 'positive_TN: {npz_name_2}' jchen9@caltech.edu < {npz_name_2}.txt")
