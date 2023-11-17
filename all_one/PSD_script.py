@@ -17,7 +17,7 @@ entropy_type = sys.argv[7]
 cutoff = float(sys.argv[8])
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-npz_name = f'{sys.argv[1]}_{sys.argv[2]}_{sys.argv[3]}_{sys.argv[4]}_{sys.argv[5]}_{sys.argv[6]}_{sys.argv[7]}_{sys.argv[8]}'
+npz_name = f'{sys.argv[1]}_{sys.argv[2]}_{sys.argv[3]}_{sys.argv[4]}_{sys.argv[5]}_[{site_mode[0]},{site_mode[1]}]_{sys.argv[7]}_{sys.argv[8]}'
 npz_directory = script_directory + f'/{npz_name}.npz'
 with open(npz_directory, 'a+') as f:
     pass
@@ -37,5 +37,4 @@ with open(npz_directory, 'wb') as f:
     np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
 print("done")
 
-npz_name_2 = npz_name.replace("'", "\'")
-os.system(f"mail -a {npz_name_2}.npz -s 'positive_TN: {npz_name_2}' jchen9@caltech.edu < {npz_name_2}.txt")
+os.system(f"mail -a {npz_name}.npz -s 'positive_TN: {npz_name}' jchen9@caltech.edu < {npz_name}.txt")
