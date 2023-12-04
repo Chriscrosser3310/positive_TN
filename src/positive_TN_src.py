@@ -193,8 +193,11 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         def temp_mpo():
             U = stats.unitary_group.rvs(bdim**4)
             Ud = U.conj().T
-            D = np.diag(np.random.uniform(0, p, min(bdim**4, r)))
-            M = U[:, 0:r] @ D @ Ud[0:r, :]
+            
+            #D = np.diag(np.random.uniform(0, p, min(bdim**4, r)))
+            #M = U[:, 0:r] @ D @ Ud[0:r, :]
+            
+            M = U[:, 0:r] @ Ud[0:r, :]
             T = np.reshape(M, [bdim]*8)
             T = np.einsum("abcdijkl -> aibjckdl", T)
             T = np.reshape(T, [bdim**2]*4)
