@@ -220,6 +220,7 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
             T = np.reshape(M, [bdim]*8)
             T = np.einsum("abcdijkl -> aibjckdl", T)
             T = np.reshape(T, [bdim**2]*4)
+            return T
         def temp_mps():
             return temp_mpo()[0, :, :, :]
         
