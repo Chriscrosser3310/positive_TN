@@ -208,6 +208,24 @@ def boundary_mps(n, p, bdim=2, site_mode="all_one", width_mode="full"):
         rand_fn_mps = temp_mps
         rand_fn_mpo = temp_mpo
     
+    # site_mode == ("rand-PSD-Haar", r) where r is an integer indicating the physical-bond rank
+    # p = [l, u]
+    elif site_mode[0] == "rand-PSD-Haar":
+        r = site_mode[1]
+        def temp_mpo():
+            U = stats.unitary_group.rvs(bdim**4*r)
+            psi = U[0, :]
+            psi_reshape = np.reshape(psi, (bdim**4, r))
+            M =  psi_reshape @ psi_reshape.conj().T
+            T = np.reshape(M, [bdim]*8)
+            T = np.einsum("abcdijkl -> aibjckdl", T)
+            T = np.reshape(T, [bdim**2]*4)
+        def temp_mps():
+            return temp_mpo()[0, :, :, :]
+        
+        rand_fn_mps = temp_mps
+        rand_fn_mpo = temp_mpo
+
     # site_mode == ("rand-PSD-gaussian", r) where r is an integer indicating the physical-bond rank
     # p = [l, u]
     elif site_mode[0] == "rand-PSD-gaussian":
