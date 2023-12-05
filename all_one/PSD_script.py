@@ -17,7 +17,7 @@ entropy_type = sys.argv[7]
 cutoff = float(sys.argv[8])
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-npz_name = f'{sys.argv[1]}_{sys.argv[2]}_{sys.argv[3]}_{sys.argv[4]}_{sys.argv[5]}_[{site_mode[0]},{site_mode[1]}]_{sys.argv[7]}_{sys.argv[8]}'
+npz_name = f'{sys.argv[1]}_{sys.argv[2]}_{sys.argv[3]}_{sys.argv[4]}_{sys.argv[5]}_{site_mode[0]},{site_mode[1]}_{sys.argv[7]}_{sys.argv[8]}'
 npz_directory = script_directory + f'/{npz_name}.npz'
 with open(npz_directory, 'a+') as f:
     pass
