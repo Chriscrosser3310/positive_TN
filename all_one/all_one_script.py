@@ -23,7 +23,7 @@ with open(npz_directory, 'a+') as f:
     pass
 print(npz_directory)
 
-avg_table, std_table = avg_entropy_nplist(nlist, 
+avg_table, std_table, raw_data = avg_entropy_nplist(nlist, 
                                           plist, 
                                           bdim=d, 
                                           repeat=repeat, 
@@ -34,7 +34,7 @@ avg_table, std_table = avg_entropy_nplist(nlist,
                                           width_mode=width_mode, 
                                           cutoff=cutoff)
 with open(npz_directory, 'wb') as f:
-    np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+    np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table, raw_data=raw_data)
 print("done")
 
 os.system(f"mail -a {npz_name}.npz -s 'positive_TN: {npz_name}' jchen9@caltech.edu < {npz_name}.txt")

@@ -425,7 +425,7 @@ def avg_entropy_nplist(nlist,
         if save_prt:
             with open(txt_directory, "a+") as f:
                 f.write(f"\n")
-    return avg_table, std_table
+    return avg_table, std_table, raw_data
 
 def plot_finite_sim(filenames, error_bar=True, log_scale=False):
     npz_directorys = []
