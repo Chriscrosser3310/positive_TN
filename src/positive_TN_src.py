@@ -338,6 +338,7 @@ def avg_entropy_nplist(nlist,
     n_num, p_num = len(nlist), len(plist)
     avg_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
     std_table = np.array([[np.nan for _ in range(p_num)] for _ in range(n_num)])
+    raw_data = np.array([[[np.nan for _ in range(repeat)] for _ in range(p_num)] for _ in range(n_num)])
 
     script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
     if filename == None:
@@ -412,12 +413,13 @@ def avg_entropy_nplist(nlist,
             avg, std = np.average(es), np.std(es)
             avg_table[j, i] = avg
             std_table[j, i] = std
+            raw_data[j, i] = es
             if prt:
                 print(f"{n}", end = " ")
             if save_prt:
                 with open(txt_directory, "a+") as f:
                     f.write(f"{n} ")
-            np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+            np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table, raw_data=raw_data)
         if prt:
             print()
         if save_prt:
