@@ -347,7 +347,7 @@ def avg_entropy_nplist(nlist,
     else:
         file_directory = script_directory + f"/{filename}.npz"
         txt_directory = script_directory + f"/{filename}.txt"
-    np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+    np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table, raw_data=raw_data)
     for (i, p) in enumerate(plist):
         if prt:
             print(f"-------p = {p}-------")
@@ -394,7 +394,7 @@ def avg_entropy_nplist(nlist,
                     mps_zero = qtn.MatrixProductState([azero[0]] + [azero]*(n-2) + [azero[0]])
                     e = np.real((mps_zero @ mps_out) / (mps_zero @ mps_out_ns))
                     #print(f"sign-problem img of contracted value: {np.imag(e)}")
-                else:
+                elif entropy_type == "von-Neumann" or entropy_type.startswith("renyi"):
                     mps_out = mps
                     mps_out.normalize()
                     for mpo in mpos:
@@ -409,6 +409,31 @@ def avg_entropy_nplist(nlist,
                         S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
                         S = S[S > 0.0]
                         e = 1/(1-k)*np.log(np.sum(S**k))
+                elif entropy_type == "renyi-2-convergence":
+
+                    e_prev = np.inf
+
+                    for maxdim in range(bdim, bdim**2):
+                        mps_out = mps
+                        mps_out.normalize()
+                        for mpo in mpos:
+                            mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff, maxdim=maxdim)
+                            mps_out.normalize()
+                        #mps_out.show()
+
+                        S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
+                        S = S[S > 0.0]
+                        e_new = 1/(1-k)*np.log(np.sum(S**2))
+
+                        if np.abs(e_new - e_prev) < 1E-10:
+                            break
+
+                        e_prev = e_new
+                    
+                    e = e_new
+
+                else:
+                    raise("?")
                 es.append(e)
             avg, std = np.average(es), np.std(es)
             avg_table[j, i] = avg
