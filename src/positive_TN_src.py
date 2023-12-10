@@ -412,6 +412,7 @@ def avg_entropy_nplist(nlist,
                 elif entropy_type == "renyi-2-convergence":
 
                     e_prev = np.inf
+                    diff = np.inf
 
                     for maxdim in range(bdim, bdim**2):
                         mps_out = mps
@@ -425,10 +426,14 @@ def avg_entropy_nplist(nlist,
                         S = S[S > 0.0]
                         e_new = 1/(1-k)*np.log(np.sum(S**2))
 
-                        if np.abs(e_new - e_prev) < 1E-10:
+                        diff = np.abs(e_new - e_prev)
+                        if diff < 1E-10:
                             break
 
                         e_prev = e_new
+                    
+                    print("maxdim:", maxdim)
+                    print("renyi-2 diff:", diff)
                     
                     e = e_new
 
