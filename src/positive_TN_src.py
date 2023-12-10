@@ -578,10 +578,11 @@ def combine_npz(filenames):
     if type(filenames) == str:
         filenames = [filenames]
 
-    d, nlist, plist, avg_table, std_table = None, None, None, None, None
+    d, nlist, plist, avg_table, std_table, raw_data = None, None, None, None, None, None
     for filename in filenames:
-        script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-        npz_directory = script_directory + f'{filename}'
+        #script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+        #npz_directory = script_directory + f'{filename}'
+        npz_directory = filename
         npz_directorys.append(npz_directory)
         npz = np.load(npz_directory)
 
@@ -610,13 +611,20 @@ def combine_npz(filenames):
         else:
             std_table = np.append(std_table, npz['std_table'], axis=0)
 
-    script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+        if raw_data is None:
+            raw_data = npz['raw_data']
+        else:
+            raw_data = np.append(raw_data, npz['raw_data'], axis=0)
+    '''
+    #script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
     filename_split = filenames[0].split("_")
     filename_split[1] = f"[{','.join([str(n) for n in nlist])}]"
     npz_name = "_".join(filename_split) #f"{d}_[{','.join([str(n) for n in nlist])}]_{len(plist)}_50"
-    npz_directory = script_directory + f'/{npz_name}.npz'
-    with open(npz_directory, 'wb') as f:
-        np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table)
+    #npz_directory = script_directory + f'/{npz_name}.npz'
+    npz_directory = f'/{npz_name}.npz'
+    '''
+    with open("combined.npz", 'wb') as f:
+        np.savez(f, d=[d], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table, raw_data=raw_data)
 
 if __name__ == "__main__":
 
