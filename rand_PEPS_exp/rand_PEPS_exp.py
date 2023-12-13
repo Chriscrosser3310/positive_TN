@@ -86,6 +86,8 @@ if __name__ == "__main__":
                 np.savez(f, D=D, phys_dim=phys_dim, Wlist=Wlist, repeat=repeat, chi=chi, svals=svals, es=es, avgs=avgs, stds=stds)
         avgs.append(np.average(es[i]))
         stds.append(np.std(es[i]))
+        with open(npz_directory, 'wb') as f:
+            np.savez(f, D=D, phys_dim=phys_dim, Wlist=Wlist, repeat=repeat, chi=chi, svals=svals, es=es, avgs=avgs, stds=stds)
         print(f"======== W={W} done ========")
     
     with open(npz_directory, 'wb') as f:
