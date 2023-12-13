@@ -9,10 +9,10 @@ def Haar_rand(size):
     psi = U[0, :]
     return psi.reshape(size)
 
-def rand_instance(Lx, D, phys_dim):
+def rand_instance(Lx, D, phys_dim, chi):
 
     Ly = 4 * Lx
-    chi = D**3 #64
+    #chi = D**3
     peps = qtn.PEPS.from_fill_fn(
         lambda shape: Haar_rand(size=shape),
         Lx + 1, Ly, D, phys_dim=phys_dim
@@ -61,9 +61,10 @@ if __name__ == "__main__":
     phys_dim = int(sys.argv[2])
     Wlist = eval(sys.argv[3])
     repeat = int(sys.argv[4])
+    chi = int(sys.argv[5])
 
     script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-    npz_name = f'PEPS_{sys.argv[1]}_{sys.argv[2]}_{sys.argv[3]}_{sys.argv[4]}'
+    npz_name = f'PEPS_D={sys.argv[1]}_physdim={sys.argv[2]}_W={sys.argv[3]}_repeat={sys.argv[4]}_chi={sys.argv[5]}'
     npz_directory = script_directory + f'/{npz_name}.npz'
     with open(npz_directory, 'a+') as f:
         pass
@@ -78,15 +79,17 @@ if __name__ == "__main__":
         svals.append([])
         es.append([])
         for _ in range(repeat):
-            s, e = rand_instance(W, D, phys_dim)
+            s, e = rand_instance(W, D, phys_dim, chi)
             svals[i].append(s)
             es[i].append(e)
+            with open(npz_directory, 'wb') as f:
+                np.savez(f, D=D, phys_dim=phys_dim, Wlist=Wlist, repeat=repeat, chi=chi, svals=svals, es=es, avgs=avgs, stds=stds)
         avgs.append(np.average(es[i]))
         stds.append(np.std(es[i]))
         print(f"======== W={W} done ========")
     
     with open(npz_directory, 'wb') as f:
-        np.savez(f, D=D, phys_dim=phys_dim, Wlist=Wlist, repeat=repeat, svals=svals, es=es, avgs=avgs, stds=stds)
+        np.savez(f, D=D, phys_dim=phys_dim, Wlist=Wlist, repeat=repeat, chi=chi, svals=svals, es=es, avgs=avgs, stds=stds)
     print("done")
 
-    os.system(f"mail -a {npz_name}.npz -s 'rand_PEPES_exp: {npz_name}' jchen9@caltech.edu < {npz_name}.txt")
+    os.system(f"mail -a {npz_name}.npz -s 'rand_PEPES_exp: {npz_name}' jchen9@caltech.edu")
