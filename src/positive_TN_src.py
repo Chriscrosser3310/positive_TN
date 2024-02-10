@@ -350,8 +350,9 @@ def avg_entropy_nplist(nlist,
     np.savez(file_directory, d=[bdim], nlist=nlist, plist=plist, avg_table=avg_table, std_table=std_table, raw_data=raw_data)
     for (i, p) in enumerate(plist):
         if prt:
-            print(f"-------p = {p}-------")
-            print("Finished: ", end="")
+            if type(site_mode) != list:
+                print(f"-------p = {p}-------")
+                print("Finished: ", end="")
         if save_prt:
             with open(txt_directory, "a+") as f:
                 f.write(f"-------p = {p}-------\n")
@@ -404,11 +405,15 @@ def avg_entropy_nplist(nlist,
 
                     if entropy_type == "von-Neumann":
                         e = mps_out.entropy(n//2)
+                    elif entropy_type == "renyi-2":
+                        mpo = mps_out.ptr(range(0, n//2))
+                        e = -np.log(mpo @ mpo.conj())
                     elif entropy_type.startswith("renyi"):
                         k = int(entropy_type.split("-")[1])
                         S = mps_out.schmidt_values(n//2, cur_orthog=None, method='svd')
                         S = S[S > 0.0]
                         e = 1/(1-k)*np.log(np.sum(S**k))
+                        print(e)
                 elif entropy_type == "renyi-2-convergence":
 
                     e_prev = np.inf
@@ -445,7 +450,10 @@ def avg_entropy_nplist(nlist,
             std_table[j, i] = std
             raw_data[j, i] = es
             if prt:
-                print(f"{n}", end = " ")
+                if type(site_mode) != list:
+                    print(f"{n}", end = " ")
+                else:
+                    print(f"------W={n//4} done------")
             if save_prt:
                 with open(txt_directory, "a+") as f:
                     f.write(f"{n} ")
