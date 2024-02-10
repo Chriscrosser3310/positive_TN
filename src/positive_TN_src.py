@@ -83,7 +83,7 @@ def rand_MPO(n, rand_fn, bdim=2, tensorwise=True):
         for r in range(1, n-1):
             arrays[r] = rand_fn()
         arrays[0] = rand_fn()[0, :, :, :]
-        arrays[-1] = rand_fn()[:, :, :, 0]
+        arrays[-1] = rand_fn()[:, 0, :, :]
     else:
         for r in range(1, n-1):
             t = np.zeros((bdim, bdim, bdim, bdim))
@@ -108,7 +108,7 @@ def rand_MPS(n, rand_fn, bdim=2, tensorwise=True):
         for r in range(1, n-1):
             arrays[r] = rand_fn()
         arrays[0] = rand_fn()[0, :, :]
-        arrays[-1] = rand_fn()[:, :, 0]
+        arrays[-1] = rand_fn()[:, 0, :]
     else:
         for r in range(1, n-1):
             t = np.zeros((bdim, bdim, bdim))
@@ -399,13 +399,16 @@ def avg_entropy_nplist(nlist,
                     mps_out = mps
                     mps_out.normalize()
                     for mpo in mpos:
-                        mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
+                        if cutoff == 0:
+                            mps_out = mpo.apply(mps_out, compress=False)
+                        else:
+                            mps_out = mpo.apply(mps_out, compress=True, cutoff=cutoff)
                         mps_out.normalize()
                     #mps_out.show()
 
                     if entropy_type == "von-Neumann":
                         e = mps_out.entropy(n//2)
-                    elif entropy_type == "renyi-2":
+                    elif entropy_type == "renyi-2-direct":
                         mpo = mps_out.ptr(range(0, n//2))
                         e = -np.log(mpo @ mpo.conj())
                     elif entropy_type.startswith("renyi"):
